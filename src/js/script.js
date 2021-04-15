@@ -127,13 +127,13 @@
       thisProduct.cartButton = thisProduct.element.querySelector(select.menuProduct.cartButton);
       thisProduct.priceElem = thisProduct.element.querySelector(select.menuProduct.priceElem);
       // console.log('thisProduct.accordionTrigger', thisProduct.accordionTrigger);
-      // console.log('obrazek', thisProduct.imageWrapper);
+      // console.log('div obrazków', thisProduct.imageWrapper);
       // console.log('thisProduct widget', thisProduct.amountWidgetElem);
     }
     initAccordion() {
       const thisProduct = this;
 
-      /* find the clickable trigger (the element that should react to clicking) 
+      /* find the clickable trigger (the element that should react to clicking)
      const clickableTrigger = select.menuProduct.clickable;
 
      console.log('clickableTrigger', clickableTrigger);
@@ -172,6 +172,7 @@
       thisProduct.cartButton.addEventListener('click', function (event) {
         event.preventDefault();
         thisProduct.processOrder();
+        thisProduct.addToCart();
       });
     }
     processOrder() {
@@ -208,14 +209,14 @@
               price -= option.price;
             }
           }
-          const optionImage = thisProduct.imageWrapper.querySelector('.paramId-optionId');
+          const optionImage = thisProduct.imageWrapper.querySelector('toppings-salami');
           if (optionImage) {
 
             // Yes! We've found it!
           }
-          // console.log('optionImage', optionImage);
-          //  console.log('paramId', paramId);
-          //  console.log('optionId', optionId);
+          //    console.log('optionImage', optionImage);
+          // console.log('paramId', paramId);
+          //console.log('optionId', optionId);
         }
 
 
@@ -232,7 +233,9 @@
 
 
         // update calculated price in the HTML
+        thisProduct.priceSingle = String(price);
         thisProduct.priceElem.innerHTML = String(price);
+        //  console.log('CO TO KURWA JEST', thisProduct.priceSingle);
       }
     }
     initAmountWidget() {
@@ -240,10 +243,72 @@
 
       thisProduct.amountWidgetElem.addEventListener('updated', function () {
         thisProduct.processOrder();
-        console.log('działa?');
+        //   console.log('działa?');
       });
       thisProduct.amountWidget = new AmountWidget(thisProduct.amountWidgetElem);
     }
+
+    addToCart() {
+      const thisProduct = this;
+
+      app.cart.add(thisProduct.prepareCartProduct());
+    }
+
+    prepareCartProduct() {
+      const thisProduct = this;
+
+      const productsSummary = {
+        id: thisProduct.id,
+        name: thisProduct.data.name,
+        amount: thisProduct.amountWidget.value,
+        priceSingle: thisProduct.data.price,
+        price: thisProduct.priceSingle,
+        params: [this.prepareCartProductParams()],
+      };
+      // console.log('productsSummary', productsSummary);
+      return productsSummary;
+    }
+    //  thisProduct.priceSingle, zamieniłem je miejscami !!!!!!!!!!!!!!!!!!
+    //thisProduct.data.price, !!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+
+    prepareCartProductParams() {
+      const thisProduct = this;
+
+      const formData = utils.serializeFormToObject(thisProduct.form);
+      const params = {};
+
+      // for very category (param)
+      for (let paramId in thisProduct.data.params) {
+        const param = thisProduct.data.params[paramId];
+
+        // create category param in params const eg. params = { ingredients: { name: 'Ingredients', options: {}}}
+        params[paramId] = {
+          name: param.label,
+          options: {},
+        };
+
+        // for every option in this category
+        for (let optionId in param.options) {
+          const option = param.options[optionId];
+          const optionSelected = formData[paramId] && formData[paramId].includes(optionId);
+          if (optionSelected) {
+            console.log(option);
+            // option is selected!
+          }
+        }
+      }
+
+      return params;
+    }
+
+
+
+
+
   }
 
 
@@ -254,8 +319,8 @@
       thisWidget.setValue(thisWidget.input.value);
       thisWidget.initActions();
 
-      console.log('AmountWidget', thisWidget);
-      console.log('constructor arguments', element);
+      //   console.log('AmountWidget', thisWidget);
+      // console.log('constructor arguments', element);
     }
     getElements(element) {
       const thisWidget = this;
@@ -346,6 +411,17 @@
         thisCart.dom.wrapper.classList.toggle('active');
       });
     }
+
+    add(menuProduct) {
+      // const thisCart = this;
+
+      console.log('adding product', menuProduct);
+    }
+
+
+
+
+
   }
 
   const app = {
